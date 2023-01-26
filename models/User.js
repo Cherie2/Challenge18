@@ -11,7 +11,7 @@ const UserSchema = new Schema(
 
     email: {
       type: String,
-      required: "Username is Required",
+      required: "Email is Required",
       unique: true,
       match: [/.+@.+\..+/],
     },
