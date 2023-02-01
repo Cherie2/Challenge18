@@ -2,7 +2,7 @@ const { User, Thought } = require("../models");
 
 const userController = {
   // Gets all users
-  getAllUser(req, res) {
+  getAllUsers(req, res) {
     User.find({})
       .populate({
         select: "-__v",
@@ -24,6 +24,7 @@ const userController = {
         select: "-__v",
         path: "thoughts",
       })
+      
       .select("-__v")
       .then((userData) => {
         if (!userData) {
@@ -48,16 +49,20 @@ const userController = {
 
   // Updates a user by Id
   updateUser({ params, body }, res) {
-    User.findOneAndUpdate({ _id: params.id }, body, {
-      new: true,
-      runValidators: true,
-    })
+    User.findOneAndUpdate(
+      { _id: params.id },
+      { $set: body },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
       .then((userData) => {
         if (!userData) {
           res.status(404).json({ message: "No user found with this id!" });
           return;
         }
-        res.json(dbUserData);
+        res.json(userData);
       })
       .catch((err) => res.json(err));
   },
@@ -65,13 +70,12 @@ const userController = {
   // Deletes user
   deleteUser({ params }, res) {
     User.findOneAndDelete({ _id: params.id })
-      .then((dbUserData) => {
-        if (!dbUserData) {
+      .then((userData) => {
+        if (!userData) {
           return res.status(404).json({ message: "No user with this id!" });
         }
-        // BONUS: get ids of user's `thoughts` and delete them all
-        // $in to find specific things
-        return Thought.deleteMany({ _id: { $in: dbUserData.thoughts } });
+        // BONUS: get ids of user's `thoughts` and delete them all, $in finds users thoughts
+        return Thought.deleteMany({ _id: { $in: userData.thoughts } });
       })
       .then(() => {
         res.json({ message: "User and their thoughts deleted successfully!" });
@@ -88,10 +92,10 @@ const userController = {
     )
       .then((userData) => {
         if (!userData) {
-          res.status(404).json({ message: "No user with this id" });
+          res.status(404).json({ message: "No user with this id!" });
           return;
         }
-        res.json(dbUserData);
+        res.json(userData);
       })
       .catch((err) => res.json(err));
   },
@@ -112,4 +116,5 @@ const userController = {
       .catch((err) => res.json(err));
   },
 };
+
 module.exports = userController;

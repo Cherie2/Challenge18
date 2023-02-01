@@ -2,7 +2,7 @@ const { Thought, User } = require("../models");
 
 const thoughtController = {
   // Gets All Thoughts
-  getAllThought(req, res) {
+  getAllThoughts(req, res) {
     Thought.find({})
       .populate({
         select: "-__v",
@@ -51,7 +51,6 @@ const thoughtController = {
         if (!userData) {
           return res.status(404).json({ message: "Unable to create Thought!" });
         }
-
         res.json({ message: "Thought successfully created!" });
       })
       .catch((err) => res.json(err));
@@ -59,10 +58,14 @@ const thoughtController = {
 
   // Update Thought by id
   updateThought({ params, body }, res) {
-    Thought.findOneAndUpdate({ _id: params.id }, body, {
-      new: true,
-      runValidators: true,
-    })
+    Thought.findOneAndUpdate(
+      { _id: params.id },
+      { $set: body },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
       .then((thoughtData) => {
         if (!thoughtData) {
           res.status(404).json({ message: "No thought found with this id!" });
@@ -84,7 +87,7 @@ const thoughtController = {
         // remove thought id from user's `thoughts` field
         return User.findOneAndUpdate(
           { thoughts: params.id },
-          //$pull removes from an existing values that match a specified condition.
+          //$pull removes from thoughtdId.
           { $pull: { thoughts: params.id } },
           { new: true }
         );
@@ -106,7 +109,7 @@ const thoughtController = {
       { new: true, runValidators: true }
     )
       .then((thoughtData) => {
-        if (thoughtData) {
+        if (!thoughtData) {
           res.status(404).json({ message: "No thought with this id!" });
           return;
         }

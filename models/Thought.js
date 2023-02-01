@@ -1,6 +1,7 @@
-const { Schema, model } = require("mongoose");
+const { truncate } = require("fs");
+const { Schema, Types, model } = require("mongoose");
 
-const ReactionSchema = new Schema(
+const reactionSchema = new Schema(
   {
     reactionId: {
       type: Schema.Types.ObjectId,
@@ -24,7 +25,7 @@ const ReactionSchema = new Schema(
       // Sets default value to current timestamp
       default: Date.now,
       // Getter method to format timestamp on query
-      get: (timestamp) => dateFormat(timestamp),
+      //get: (timestamp) => dateFormat(timestamp),
     },
   },
   {
@@ -34,11 +35,12 @@ const ReactionSchema = new Schema(
     id: false,
   }
 );
-const ThoughtSchema = new Schema(
+
+const thoughtSchema = new Schema(
   {
     thoughtText: {
       type: String,
-      required: "A Thought is Required",
+      required: true,
       minlength: 1,
       maxlength: 280,
     },
@@ -46,15 +48,15 @@ const ThoughtSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (timestamp) => dateFormat(timestamp),
+      // get: (timestamp) => dateFormat(timestamp),
     },
 
     username: {
-      type: Schema.Types.ObjectId,
-      ref: "Thought",
+      type: String,
+      required: true,
     },
 
-    reactions: [ReactionSchema],
+    reactions: [reactionSchema],
   },
   {
     toJSON: {
@@ -64,10 +66,10 @@ const ThoughtSchema = new Schema(
   }
 );
 
-UserSchema.virtual("reactionCount").get(function () {
+thoughtSchema.virtual("reactionCount").get(function () {
   return this.reactions.length;
 });
 
-const Thought = model("Thought", ThoughtSchema);
+const Thought = model("Thought", thoughtSchema);
 
 module.exports = Thought;
